@@ -80,19 +80,19 @@ export default function Home() {
   </div>)
 
   return (
-    <div className="bg-slate-100 h-screen">
+    <div className="bg-slate-100 h-screen overflow-y-auto">
       <div className="text-center">
         <h1
           className="text-4xl font-bold text-center poppins-semibold my-5 rounded-md bg-cyan-400 text-white inline-block px-5 p-1">
           TATAMI</h1>
       </div>
-      <div className="container mx-auto space-y-20">
-        <div className="flex justify-around items-center mt-20">
+      <div className="container mx-auto space-y-16 lg:space-y-20 mb-5 mt-8 lg:mt-20">
+        <div className="flex flex-col lg:flex-row justify-around gap-12  lg:gap-1 items-center">
           <div className="flex flex-col items-center gap-1">
-            <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 1</h1>
+            <h1 className="poppins-semibold font-bold text-2xl lg:text-3xl text-black">PEMAIN 1</h1>
             <p className="poppins-regular text-slate-700 text-sm">&quot;Perguruan Daerah&quot;</p>
-            <div className="w-48 h-48 bg-red-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
-              <h1 className={`score-kiri font-semibold poppins-semibold ${dataScore.score_kiri > 1000 ? 'text-6xl' : 'text-8xl'}`}>{formatNumberShort(dataScore.score_kiri)}</h1>
+            <div className="w-40 h-40 bg-red-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
+              <h1 className={`score-kiri font-semibold poppins-semibold ${dataScore.score_kiri > 1000 ? 'text-4xl lg:text-6xl' : 'text-6xl lg:text-8xl'}`}>{formatNumberShort(dataScore.score_kiri)}</h1>
             </div>
             <div className="space-x-0.5 mt-2">
               {/* <button
@@ -105,12 +105,12 @@ export default function Home() {
               className="bg-red-500 reset-kiri rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">Reset</button>  */}
             </div>
           </div>
-          <h1 className="text-6xl font-semibold poppins-semibold text-black">VS</h1>
+          <h1 className="text-5xl lg:text-6xl font-semibold poppins-semibold text-black">VS</h1>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 2</h1>
-            <p className="poppins-regular text-slate-700 text-sm">&quot;Perguruan Daerah&quot;</p>
-            <div className="w-48 h-48 bg-blue-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
-              <h1 className={`score-kanan font-semibold poppins-semibold ${dataScore.score_kanan > 1000 ? 'text-6xl' : 'text-8xl'}`}>{formatNumberShort(dataScore.score_kanan)}</h1>
+            <h1 className="poppins-semibold font-bold text-2xl lg:text-3xl text-black">PEMAIN 2</h1>
+            <p className="poppins-regular text-slate-700 text-xs lg:text-sm">&quot;Perguruan Daerah&quot;</p>
+            <div className="w-40 h-40 bg-blue-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
+              <h1 className={`score-kanan font-semibold poppins-semibold ${dataScore.score_kanan > 1000 ? 'text-4xl lg:text-6xl' : 'text-6xl lg:text-8xl'}`}>{formatNumberShort(dataScore.score_kanan)}</h1>
             </div>
             <div className="space-x-0.5 mt-2">
               {/* <button
@@ -127,8 +127,8 @@ export default function Home() {
         <div className="flex flex-col items-center gap-5">
           {/* <button className="bg-black rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow" onClick={() => setPlay(!play)}>{play ? 'Stop' : 'Start'}</button>  */}
           <div
-            className="text-7xl bg-black text-white text-center w-64 flex justify-center items-center p-2 rounded-md poppins-semibold font-semibold relative">
-            {formatTime(time).split(".")[0]} <sup className="text-3xl font-medium">{formatTime(time).split(".")[1]}</sup></div>
+            className="text-5xl lg:text-7xl bg-black text-white text-center w-50 lg:w-64 flex justify-center items-center p-2 py-3 rounded-md poppins-semibold font-semibold relative">
+            {formatTime(time).split(".")[0]} <sup className="text-lg lg:text-3xl font-medium">{formatTime(time).split(".")[1]}</sup></div>
         </div>
       </div >
     </div>
