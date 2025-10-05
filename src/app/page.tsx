@@ -1,28 +1,83 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import useSWR from 'swr'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Loader2 } from 'lucide-react';
 
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function Home() {
-  const { data, isLoading } = useSWR(
+  const { data: dataScore, isLoading: isLoadingScore } = useSWR(
     '/api',
-    fetcher, {
-    refreshInterval: 1000, 
-  }
+    fetcher,
+    {
+      refreshInterval: 500,
+    }
   );
 
+  const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
+    '/api/stopwatch',
+    fetcher,
+    {
+      refreshInterval: 100,
+    }
+  );
+  // const [play, setPlay] = useState<boolean>(true)
+  const [time, setTime] = useState<number>(0);
+  const intervalRef = useRef<any>(null);
+
+  const formatNumberShort = (num: number): string => {
+    if (num >= 1000000000) {
+      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+    } else if (num >= 1000000) {
+      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    } else {
+      return num.toString();
+    }
+  }
+
+  const formatTime = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const milliseconds = Math.floor((ms % 1000) / 10);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}.${milliseconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   useEffect(() => {
-    const interval = setInterval(() => {
-    }, 1000);
-    return () => clearInterval(interval);
+    if (dataStopwatch?.play == true) {
+      const startTime = Date.now() - time;
+      intervalRef.current = setInterval(() => {
+        setTime(Date.now() - startTime);
+      }, 10); // update setiap 10ms (0.01 detik)
+    } else if(dataStopwatch?.play == false && dataStopwatch?.reset == false) {
+      clearInterval(intervalRef.current);
+      (async () => await fetch('/api/stopwatch', { method: 'POST', body: JSON.stringify({ play: false, reset: false, time }) }))();
+    } else if(dataStopwatch?.reset == true) {
+      clearInterval(intervalRef.current);
+      (async () => await fetch('/api/stopwatch', { method: 'POST', body: JSON.stringify({ play: false, reset: false, time: 0 }) }))();
+      setTime(0);
+    }
+    if(dataStopwatch?.time) {
+      setTime(Number(dataStopwatch?.time));
+    }
 
-  }, [data]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [dataStopwatch]);
 
-  if (isLoading) return <div className='fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center bg-white text-4xl text-black'>Loading</div>
-
+  if (isLoadingScore || isLoadingStopwatch) return (<div className='fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center flex-col gap-2 bg-white text-black'>
+    <h1 className="flex items-center gap-3 text-4xl font-semibold">Loading <Loader2 className='animate-spin' size={35} /> </h1>
+    <p className="text-sm text-slate-700">&quot;Sedang menyiapkan score tatami&quot;</p>
+  </div>)
 
   return (
     <div className="bg-slate-100 h-screen">
@@ -35,10 +90,9 @@ export default function Home() {
         <div className="flex justify-around items-center mt-20">
           <div className="flex flex-col items-center gap-1">
             <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 1</h1>
-            <p className="poppins-regular text-slate-700 text-sm">&quot; Perguruan Daerah &quot;</p>
+            <p className="poppins-regular text-slate-700 text-sm">&quot;Perguruan Daerah&quot;</p>
             <div className="w-48 h-48 bg-red-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
-              <h1 className="score-kiri font-semibold poppins-semibold text-8xl">
-                {data.data.score_kiri}</h1>
+              <h1 className={`score-kiri font-semibold poppins-semibold ${dataScore.score_kiri > 1000 ? 'text-6xl' : 'text-8xl'}`}>{formatNumberShort(dataScore.score_kiri)}</h1>
             </div>
             <div className="space-x-0.5 mt-2">
               {/* <button
@@ -54,9 +108,9 @@ export default function Home() {
           <h1 className="text-6xl font-semibold poppins-semibold text-black">VS</h1>
           <div className="flex flex-col items-center gap-1">
             <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 2</h1>
-            <p className="poppins-regular text-slate-700 text-sm">&quot; Perguruan Daerah &quot;</p>
+            <p className="poppins-regular text-slate-700 text-sm">&quot;Perguruan Daerah&quot;</p>
             <div className="w-48 h-48 bg-blue-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
-              <h1 className="score-kanan font-semibold poppins-semibold text-8xl">{data.data.score_kanan}</h1>
+              <h1 className={`score-kanan font-semibold poppins-semibold ${dataScore.score_kanan > 1000 ? 'text-6xl' : 'text-8xl'}`}>{formatNumberShort(dataScore.score_kanan)}</h1>
             </div>
             <div className="space-x-0.5 mt-2">
               {/* <button
@@ -71,12 +125,10 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-col items-center gap-5">
-          {/* <button className="bg-red-500 reset rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">Reset
-          Semua</button>  */}
-          <h1
-            className="text-7xl bg-black text-white text-center w-60 p-2 rounded-md poppins-semibold font-semibold relative">
-            0:00 <span className="absolute right-6 top-4 text-sm">00</span></h1>
-
+          {/* <button className="bg-black rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow" onClick={() => setPlay(!play)}>{play ? 'Stop' : 'Start'}</button>  */}
+          <div
+            className="text-7xl bg-black text-white text-center w-64 flex justify-center items-center p-2 rounded-md poppins-semibold font-semibold relative">
+            {formatTime(time).split(".")[0]} <sup className="text-3xl font-medium">{formatTime(time).split(".")[1]}</sup></div>
         </div>
       </div >
     </div>

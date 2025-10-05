@@ -18,15 +18,26 @@ export const GET = async (request: Request) => {
         data.score_kiri = data.score_kiri + scoreKiri
         await redis.set('score_kiri', data.score_kiri);
         return new Response(JSON.stringify({ message: "Score updated", data}), {
-          status: 200,
+          status: 201,
         })
       }
+      
 
       if(scoreKanan) {
         data.score_kanan = data.score_kanan + scoreKanan
         await redis.set('score_kanan', data.score_kanan);
         return new Response(JSON.stringify({ message: "Score updated", data}), {
-          status: 200,
+          status: 201,
+        })
+      }
+      
+      if (resetKanan && resetKiri) {
+        data.score_kanan = 0
+        data.score_kiri = 0
+        await redis.set('score_kanan', 0);
+        await redis.set('score_kiri', 0);
+        return new Response(JSON.stringify({ message: "Score updated", data}), {
+          status: 201,
         })
       }
 
@@ -34,24 +45,25 @@ export const GET = async (request: Request) => {
         data.score_kiri = 0
         await redis.set('score_kiri', 0);
         return new Response(JSON.stringify({ message: "Score updated", data}), {
-          status: 200,
+          status: 201,
         })
       }
+
 
       if (resetKanan) {
         data.score_kanan = 0
         await redis.set('score_kanan', 0);
         return new Response(JSON.stringify({ message: "Score updated", data}), {
-          status: 200,
+          status: 201,
         })
       }
 
-      return new Response(JSON.stringify({ message: "Data Score", data}), {
+      return new Response(JSON.stringify({ message: "Data Score", ...data}), {
         status: 200,
       })
 
   } catch (error) {
-      return new Response(JSON.stringify({ message: "Score not found" }), {
+      return new Response(JSON.stringify({ message: "Something went wrong", error }), {
           status: 404,
       });
   }
