@@ -1,103 +1,73 @@
-import Image from "next/image";
+"use client";
+
+import useSWR from 'swr'
+
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { data, isLoading } = useSWR(
+    '/api',
+    fetcher
+  );
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  if(isLoading) return <div className='fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center bg-white text-4xl text-black'>Loading</div>
+
+  return (
+    <div className="bg-slate-100 h-screen">
+      <div className="text-center">
+        <h1
+          className="text-4xl font-bold text-center poppins-semibold my-5 rounded-md bg-cyan-400 text-white inline-block px-5 p-1">
+          TATAMI</h1>
+      </div>
+      <div className="container mx-auto space-y-20">
+        <div className="flex justify-around items-center mt-20">
+          <div className="flex flex-col items-center gap-1">
+            <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 1</h1>
+            <p className="poppins-regular text-slate-700 text-sm">&quot; Perguruan Daerah &quot;</p>
+            <div className="w-48 h-48 bg-red-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
+              <h1 className="score-kiri font-semibold poppins-semibold text-8xl">
+              {data.data.score_kiri}</h1>
+          </div>
+          <div className="space-x-0.5 mt-2">
+            {/* <button
+              className="bg-blue-500 increment-kiri rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+1</button>
+            <button
+              className="bg-blue-500 increment-kiri rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+2</button>
+            <button
+              className="bg-blue-500 increment-kiri rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+3</button>
+            <button
+              className="bg-red-500 reset-kiri rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">Reset</button>  */}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <h1 className="text-6xl font-semibold poppins-semibold text-black">VS</h1>
+        <div className="flex flex-col items-center gap-1">
+          <h1 className="poppins-semibold font-bold text-3xl text-black">PEMAIN 2</h1>
+          <p className="poppins-regular text-slate-700 text-sm">&quot; Perguruan Daerah &quot;</p>
+          <div className="w-48 h-48 bg-blue-500 text-white p-4 py-8 rounded-md mt-5 flex justify-center items-center">
+            <h1 className="score-kanan font-semibold poppins-semibold text-8xl">{data.data.score_kanan}</h1>
+        </div>
+        <div className="space-x-0.5 mt-2">
+          {/* <button
+            className="bg-blue-500 increment-kanan rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+1</button>
+          <button
+            className="bg-blue-500 increment-kanan rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+2</button>
+          <button
+            className="bg-blue-500 increment-kanan rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">+3</button>
+          <button
+            className="bg-red-500 reset-kanan rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">Reset</button> */}
+        </div>
+      </div>
+    </div>
+      <div className="flex flex-col items-center gap-5">
+        {/* <button className="bg-red-500 reset rounded-md p-2 px-3 text-white poppins-regular cursor-pointer shadow">Reset
+          Semua</button>  */}
+        <h1
+          className="text-7xl bg-black text-white text-center w-60 p-2 rounded-md poppins-semibold font-semibold relative">
+          0:00 <span className="absolute right-6 top-4 text-sm">00</span></h1>
+
+      </div>
+    </div >
     </div>
   );
 }
