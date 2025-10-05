@@ -4,6 +4,7 @@
 import useSWR from 'swr'
 import { useEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react';
+import Pusher from 'pusher-js';
 
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -17,13 +18,8 @@ export default function Home() {
   //   }
   // );
 
-  const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
-    '/api/stopwatch',
-    fetcher,
-    {
-      refreshInterval: 100,
-    }
-  );
+  const [dataStopwatch, setDataStopwatch] = useState<any>(null);
+  const [isLoadingStopwatch, setIsLoadingStopwatch] = useState<boolean>(true);
   const [dataScore, setDataScore] = useState<any>(null);
   const [isLoadingScore, setIsLoadingScore] = useState<boolean>(true);
   const [time, setTime] = useState<number>(0);
@@ -55,16 +51,17 @@ export default function Home() {
       const startTime = Date.now() - time;
       intervalRef.current = setInterval(() => {
         setTime(Date.now() - startTime);
-      }, 10); // update setiap 10ms (0.01 detik)
-    } else if(dataStopwatch?.play == false && dataStopwatch?.reset == false) {
+      }, 10); 
+    } else if (dataStopwatch?.play == false && dataStopwatch?.reset == false) {
       clearInterval(intervalRef.current);
       (async () => await fetch('/api/stopwatch', { method: 'POST', body: JSON.stringify({ play: false, reset: false, time }) }))();
-    } else if(dataStopwatch?.reset == true) {
+    } else if (dataStopwatch?.reset == true) {
       clearInterval(intervalRef.current);
       (async () => await fetch('/api/stopwatch', { method: 'POST', body: JSON.stringify({ play: false, reset: false, time: 0 }) }))();
       setTime(0);
     }
-    if(dataStopwatch?.time) {
+
+    if (dataStopwatch?.time) {
       setTime(Number(dataStopwatch?.time));
     }
 
@@ -76,13 +73,45 @@ export default function Home() {
   }, [dataStopwatch]);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      const score = await fetch('/api');
-      setDataScore(await score.json());
-      setIsLoadingScore(false);
-    }, 500)
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY_ID!, {
+      cluster: "ap1"
+    });
 
-    return () => clearInterval(interval);
+    const channelScore = pusher.subscribe('score');
+    channelScore.bind('updated', (data: { score_kiri: number, score_kanan: number }) => {
+      setDataScore(data);
+    });
+
+    const channelStopwatch = pusher.subscribe('stopwatch');
+    channelStopwatch.bind('updated', (data: { play: boolean, reset: boolean, time: number }) => {
+      setDataStopwatch(data);
+    });
+
+    return () => {
+      channelScore.unbind_all();
+      channelScore.unsubscribe();
+      channelStopwatch.unbind_all();
+      channelStopwatch.unsubscribe();
+      pusher.disconnect();
+    }
+  }, [])
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch('/api/stopwatch');
+      const data = await res.json();
+      setDataStopwatch(data);
+      setIsLoadingStopwatch(false);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch('/api');
+      const data = await res.json();
+      setDataScore(data);
+      setIsLoadingScore(false);
+    })();
   }, []);
 
   if (isLoadingScore || isLoadingStopwatch) return (<div className='fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center flex-col gap-2 bg-white text-black'>

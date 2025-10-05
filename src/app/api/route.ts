@@ -1,4 +1,5 @@
 import { redis } from "@/lib/redis";
+import { pusher } from "@/lib/pusher";
 
 
 export const GET = async (request: Request) => {
@@ -16,8 +17,9 @@ export const GET = async (request: Request) => {
   try {
       if(scoreKiri) {
         data.score_kiri = data.score_kiri + scoreKiri
+        await pusher.trigger('score', 'updated', { score_kiri: data.score_kiri, score_kanan: data.score_kanan });
         await redis.set('score_kiri', data.score_kiri);
-        return new Response(JSON.stringify({ message: "Score updated", data}), {
+        return new Response(JSON.stringify({ message: "Score updated", ...data}), {
           status: 201,
         })
       }
@@ -25,8 +27,9 @@ export const GET = async (request: Request) => {
 
       if(scoreKanan) {
         data.score_kanan = data.score_kanan + scoreKanan
+        await pusher.trigger('score', 'updated', { score_kiri: data.score_kiri, score_kanan: data.score_kanan });
         await redis.set('score_kanan', data.score_kanan);
-        return new Response(JSON.stringify({ message: "Score updated", data}), {
+        return new Response(JSON.stringify({ message: "Score updated", ...data}), {
           status: 201,
         })
       }
@@ -34,17 +37,19 @@ export const GET = async (request: Request) => {
       if (resetKanan && resetKiri) {
         data.score_kanan = 0
         data.score_kiri = 0
+        await pusher.trigger('score', 'updated', { score_kiri: data.score_kiri, score_kanan: data.score_kanan });
         await redis.set('score_kanan', 0);
         await redis.set('score_kiri', 0);
-        return new Response(JSON.stringify({ message: "Score updated", data}), {
+        return new Response(JSON.stringify({ message: "Score updated", ...data}), {
           status: 201,
         })
       }
 
       if (resetKiri) {
         data.score_kiri = 0
+        await pusher.trigger('score', 'updated', { score_kiri: data.score_kiri, score_kanan: data.score_kanan });
         await redis.set('score_kiri', 0);
-        return new Response(JSON.stringify({ message: "Score updated", data}), {
+        return new Response(JSON.stringify({ message: "Score updated", ...data}), {
           status: 201,
         })
       }
@@ -52,12 +57,15 @@ export const GET = async (request: Request) => {
 
       if (resetKanan) {
         data.score_kanan = 0
+        await pusher.trigger('score', 'updated', { score_kiri: data.score_kiri, score_kanan: data.score_kanan });
         await redis.set('score_kanan', 0);
-        return new Response(JSON.stringify({ message: "Score updated", data}), {
+        return new Response(JSON.stringify({ message: "Score updated", ...data}), {
           status: 201,
         })
       }
 
+      // INIT DATA AWAL
+      await pusher.trigger("score", "updated", { ...data });
       return new Response(JSON.stringify({ message: "Data Score", ...data}), {
         status: 200,
       })
