@@ -47,6 +47,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (dataStopwatch?.time) {
+      setTime(Number(dataStopwatch?.time));
+    }
+    
     if (dataStopwatch?.play == true) {
       const startTime = Date.now() - time;
       intervalRef.current = setInterval(() => {
@@ -60,10 +64,7 @@ export default function Home() {
       (async () => await fetch('/api/stopwatch', { method: 'POST', body: JSON.stringify({ play: false, reset: false, time: 0 }) }))();
       setTime(0);
     }
-
-    if (dataStopwatch?.time) {
-      setTime(Number(dataStopwatch?.time));
-    }
+    
 
     return () => {
       if (intervalRef.current) {
@@ -100,6 +101,7 @@ export default function Home() {
     (async () => {
       const res = await fetch('/api/stopwatch');
       const data = await res.json();
+      console.log(data);
       setDataStopwatch(data);
       setIsLoadingStopwatch(false);
     })();

@@ -22,8 +22,8 @@ export const GET = async (req: Request) => {
       }
     );
   } else if (play?.toLocaleLowerCase() == "stop") {
-    await pusher.trigger("stopwatch", "updated", { play: false, reset: false });
-    await redis.set("stopwatch", JSON.stringify({ play: false, reset: false }));
+    await pusher.trigger("stopwatch", "updated", { play: false, reset: false, time: data.time });
+    await redis.set("stopwatch", JSON.stringify({ play: false, reset: false, time: data.time }));
     data.play = false;
     return new Response(
       JSON.stringify({ message: "Stopwatch stopped", ...data }),
@@ -32,8 +32,8 @@ export const GET = async (req: Request) => {
       }
     );
   } else if (play?.toLocaleLowerCase() == "reset") {
-    await pusher.trigger("stopwatch", "updated", { play: false, reset: true });
-    await redis.set("stopwatch", JSON.stringify({ play: false, reset: true }));
+    await pusher.trigger("stopwatch", "updated", { play: false, reset: true, time: 0 });
+    await redis.set("stopwatch", JSON.stringify({ play: false, reset: true, time: 0 }));
     data.play = false;
     data.reset = true;
     data.time = 0;
