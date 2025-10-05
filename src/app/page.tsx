@@ -17,17 +17,15 @@ export default function Home() {
   //   }
   // );
 
-  // const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
-  //   '/api/stopwatch',
-  //   fetcher,
-  //   {
-  //     refreshInterval: 100,
-  //   }
-  // );
+  const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
+    '/api/stopwatch',
+    fetcher,
+    {
+      refreshInterval: 100,
+    }
+  );
   const [dataScore, setDataScore] = useState<any>(null);
-  const [dataStopwatch, setDataStopwatch] = useState<any>(null);
   const [isLoadingScore, setIsLoadingScore] = useState<boolean>(true);
-  const [isLoadingStopwatch, setIsLoadingStopwatch] = useState<boolean>(true);
   const [time, setTime] = useState<number>(0);
   const intervalRef = useRef<any>(null);
 
@@ -80,11 +78,8 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(async () => {
       const score = await fetch('/api');
-      const stopwatch = await fetch('/api/stopwatch');
       setDataScore(await score.json());
-      setDataStopwatch(await stopwatch.json());
       setIsLoadingScore(false);
-      setIsLoadingStopwatch(false);
     }, 500)
 
     return () => clearInterval(interval);
