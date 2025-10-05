@@ -9,22 +9,25 @@ import { Loader2 } from 'lucide-react';
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function Home() {
-  const { data: dataScore, isLoading: isLoadingScore } = useSWR(
-    '/api',
-    fetcher,
-    {
-      refreshInterval: 500,
-    }
-  );
+  // const { data: dataScore, isLoading: isLoadingScore } = useSWR(
+  //   '/api',
+  //   fetcher,
+  //   {
+  //     refreshInterval: 500,
+  //   }
+  // );
 
-  const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
-    '/api/stopwatch',
-    fetcher,
-    {
-      refreshInterval: 100,
-    }
-  );
-  // const [play, setPlay] = useState<boolean>(true)
+  // const { data: dataStopwatch, isLoading: isLoadingStopwatch } = useSWR(
+  //   '/api/stopwatch',
+  //   fetcher,
+  //   {
+  //     refreshInterval: 100,
+  //   }
+  // );
+  const [dataScore, setDataScore] = useState<any>(null);
+  const [dataStopwatch, setDataStopwatch] = useState<any>(null);
+  const [isLoadingScore, setIsLoadingScore] = useState<boolean>(true);
+  const [isLoadingStopwatch, setIsLoadingStopwatch] = useState<boolean>(true);
   const [time, setTime] = useState<number>(0);
   const intervalRef = useRef<any>(null);
 
@@ -73,6 +76,19 @@ export default function Home() {
       }
     };
   }, [dataStopwatch]);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const score = await fetch('/api');
+      const stopwatch = await fetch('/api/stopwatch');
+      setDataScore(await score.json());
+      setDataStopwatch(await stopwatch.json());
+      setIsLoadingScore(false);
+      setIsLoadingStopwatch(false);
+    }, 500)
+
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoadingScore || isLoadingStopwatch) return (<div className='fixed top-0 right-0 bottom-0 left-0 flex items-center justify-center flex-col gap-2 bg-white text-black'>
     <h1 className="flex items-center gap-3 text-4xl font-semibold">Loading <Loader2 className='animate-spin' size={35} /> </h1>
