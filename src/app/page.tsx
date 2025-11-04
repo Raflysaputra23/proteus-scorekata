@@ -10,13 +10,6 @@ import Pusher from 'pusher-js';
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function Home() {
-  // const { data: dataScore, isLoading: isLoadingScore } = useSWR(
-  //   '/api',
-  //   fetcher,
-  //   {
-  //     refreshInterval: 500,
-  //   }
-  // );
 
   const [dataStopwatch, setDataStopwatch] = useState<any>(null);
   const [isLoadingStopwatch, setIsLoadingStopwatch] = useState<boolean>(true);
@@ -79,8 +72,16 @@ export default function Home() {
     });
 
     const channelScore = pusher.subscribe('score');
-    channelScore.bind('updated', (data: { score_kiri: number, score_kanan: number }) => {
-      setDataScore(data);
+    channelScore.bind('updated', (data: { team: string, score: number }) => {
+      if(data.team == "blue") {
+        setDataScore({ ...dataScore, score_kiri: data.score });
+      } else {
+        setDataScore({ ...dataScore, score_kanan: data.score });
+      }
+    });
+
+    channelScore.bind('reset', () => {
+      setDataScore({ score_kiri: 0, score_kanan: 0 });
     });
 
     const channelStopwatch = pusher.subscribe('stopwatch');
