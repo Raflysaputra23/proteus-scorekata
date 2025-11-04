@@ -7,7 +7,14 @@ interface Juri {
   score: number;
 }
 
+interface ScoreValid {
+  score: number;
+  count: number;
+}
+
 const rounds: Juri[] = [];
+
+const scoreValid: ScoreValid[] = [];
 
 export const GET = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -116,49 +123,70 @@ export const GET = async (request: Request) => {
 
 export const POST = async (request: Request) => {
   try {
-
     const { deviceId, team, score } = await request.json();
     if (!deviceId || !score || (team !== "red" && team !== "blue")) {
       return new Response(JSON.stringify({ message: "Invalid request" }), {
         status: 400,
       });
     }
-  
+
     // if (rounds.some((juri) => juri.deviceId === deviceId)) {
     // }
     rounds.push({ deviceId, votes: team, score });
-  
+
     if (rounds.length >= 4) {
       const score: number[] = rounds.map((juri) => juri.score);
-      const teamBlue = rounds.map(juri => juri.votes == "blue");
-      const teamRed = rounds.map(juri => juri.votes == "red");
-  
+      const teamBlue = rounds.map((juri) => juri.votes == "blue");
+      const teamRed = rounds.map((juri) => juri.votes == "red");
+
+      const oldScoreKiri = Number(await redis.get("score_kiri")) ?? 0;
+      const oldScoreKanan = Number(await redis.get("score_kanan")) ?? 0;
+      const data = { score_kiri: oldScoreKiri, score_kanan: oldScoreKanan };
+
       const teamVote = teamBlue > teamRed ? "blue" : "red";
-  
-      const skorTertinggi = Math.max(...score);
-      await pusher.trigger("score", "updated", {
-          score: skorTertinggi,
-          team: teamVote,
+
+      score.forEach((skor) => {
+        const data = scoreValid.find((item) => item.score == skor);
+        if (data) {
+          data.count += 1;
+        } else {
+          scoreValid.push({ score: skor, count: 1 });
+        }
       });
-  
-      rounds.length = 0;
-      return new Response(JSON.stringify({
-        message: "Score updated",
-        team: teamVote,
+
+      const skorTertinggi = scoreValid.sort((a, b) => b.count - a.count)[0].score;
+      await redis.set(teamVote == "blue" ? "score_kanan" : "score_kiri", teamVote == "blue" ? data.score_kanan + skorTertinggi : data.score_kiri + skorTertinggi);
+      await pusher.trigger("score", "updated", {
         score: skorTertinggi,
-      }));
+        team: teamVote,
+      });
+
+      rounds.length = 0;
+      return new Response(
+        JSON.stringify({
+          message: "Score updated",
+          team: teamVote,
+          score: skorTertinggi,
+        })
+      );
     }
-  
-    return new Response(JSON.stringify({
-      message: "Voting success",
-      team,
-      jumlahVoting: rounds.length
-    }), {
-      status: 200
-    })
-  } catch(error) {
-    return new Response(JSON.stringify({ message: "Something went wrong", error }), {
-      status: 404,
-    })
+
+    return new Response(
+      JSON.stringify({
+        message: "Voting success",
+        team,
+        jumlahVoting: rounds.length,
+      }),
+      {
+        status: 200,
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ message: "Something went wrong", error }),
+      {
+        status: 404,
+      }
+    );
   }
 };
