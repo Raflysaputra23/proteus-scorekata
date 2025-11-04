@@ -55,7 +55,7 @@ export const GET = async (request: Request) => {
     if (resetKanan && resetKiri) {
       data.score_kanan = 0;
       data.score_kiri = 0;
-      await pusher.trigger("score", "updated", {
+      await pusher.trigger("score", "reset", {
         score_kiri: data.score_kiri,
         score_kanan: data.score_kanan,
       });
