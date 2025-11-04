@@ -124,7 +124,7 @@ export const POST = async (request: Request) => {
       });
     }
   
-    if (!rounds.some((juri) => juri.deviceId === deviceId)) {
+    if (rounds.some((juri) => juri.deviceId === deviceId)) {
       rounds.push({ deviceId, votes: team, score });
     }
   
