@@ -124,9 +124,9 @@ export const POST = async (request: Request) => {
       });
     }
   
-    if (rounds.some((juri) => juri.deviceId === deviceId)) {
-      rounds.push({ deviceId, votes: team, score });
-    }
+    // if (rounds.some((juri) => juri.deviceId === deviceId)) {
+    // }
+    rounds.push({ deviceId, votes: team, score });
   
     if (rounds.length >= 4) {
       const score: number[] = rounds.map((juri) => juri.score);
